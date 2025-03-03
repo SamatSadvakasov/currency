@@ -6,12 +6,12 @@ __pycache__/
 
 # C extensions
 *.so
-
 # VSCode
 .idea/
 .vscode/
 .venv/
 # Distribution / packaging
+.ipynb_checkpoints/
 .env.dev
 .Python
 build/
