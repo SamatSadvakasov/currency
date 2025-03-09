@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'application.apps.ApplicationConfig',
+    'django_celery_results',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -101,9 +103,24 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
+        },
+    }
+}
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
+# CELERY SETTINGS
+CELERY_BROKER_URL = f'redis://127.0.0.1:6379/10'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# CELERY BEAT SCHEDULER
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 LANGUAGE_CODE = 'en-us'
 
