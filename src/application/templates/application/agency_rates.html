@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Currency Rates</h1>
+        <a href="#" class="btn btn-primary">
+            Add New Rate
+        </a>
+    </div>
+
+    {% if rates_by_agency %}
+        {% for agency, rates in rates_by_agency.items %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>{{ agency.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Currency</th>
+                                    <th>Buy Rate</th>
+                                    <th>Sell Rate</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rate in rates %}
+                                    <tr>
+                                        <td>{{ rate.get_currency_display }}</td>
+                                        <td>{{ rate.buy_rate }}</td>
+                                        <td>{{ rate.sell_rate }}</td>
+                                        <td>{{ rate.changed_at_pretty }}</td>
+                                        <td>
+                                            <a href="{% url 'currency-rate-create' %}?agency={{ agency.id }}&currency={{ rate.currency }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                Update
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            No currency rates found. Click "Add New Rate" to add rates for your exchange agency.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 
