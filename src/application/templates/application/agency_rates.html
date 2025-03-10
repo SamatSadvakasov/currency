@@ -14,7 +14,7 @@
         {% for agency, rates in rates_by_agency.items %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3>{{ agency.name }}</h3>
+                    <h3><a href="{% url 'application:agency-detail' agency.id %}">{{ agency.name }}</a></h3>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">

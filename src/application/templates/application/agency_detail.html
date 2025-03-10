@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Agency Tabs -->
+    <ul class="nav nav-tabs mb-4">
+        {% for agency in agencies %}
+        <li class="nav-item">
+            <a class="nav-link {% if agency.id == object.id %}active{% endif %}" 
+               href="{% url 'application:agency-detail' agency.id %}">
+                {{ agency.name }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="row">
+        <!-- Currency Rates Section -->
+        <div class="col-md-8">
+            {% for currency, rates in rates_by_currency.items %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ currency }}</h3>
+                </div>
+                <div class="card-body">
+                    <!-- External Rates -->
+                    <div class="mb-3">
+                        <h5>Market Rates</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Buy Rate</th>
+                                        <th>Sell Rate</th>
+                                        <th>Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rate in rates.external %}
+                                    <tr>
+                                        <td>{{ rate.agency.name }}</td>
+                                        <td>{{ rate.buy_rate }}</td>
+                                        <td>{{ rate.sell_rate }}</td>
+                                        <td>{{ rate.changed_at_pretty }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Agency Rate -->
+                    <div>
+                        <h5>Your Rate</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Buy Rate</th>
+                                        <th>Sell Rate</th>
+                                        <th>Updated</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if rates.agency %}
+                                    <tr>
+                                        <td>{{ rates.agency.buy_rate }}</td>
+                                        <td>{{ rates.agency.sell_rate }}</td>
+                                        <td>{{ rates.agency.changed_at_pretty }}</td>
+                                        <td>
+                                            <a href="{% url 'application:currency-rate-update' rates.agency.id %}" 
+                                               class="btn btn-sm btn-primary">Update</a>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <a href="{% url 'application:currency-rate-create' %}?agency={{ object.id }}&currency={{ currency }}" 
+                                               class="btn btn-sm btn-success">Set Rate</a>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Calculator Section -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="mb-0">Currency Calculator</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Placeholder for calculator -->
+                    <p class="text-muted">Currency calculator will be implemented later.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header h3 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .table th {
+        background-color: #f8f9fa;
+    }
+    .nav-tabs .nav-link {
+        color: #495057;
+    }
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+        color: #007bff;
+    }
+</style>
+{% endblock %} 

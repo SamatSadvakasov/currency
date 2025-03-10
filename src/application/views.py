@@ -1,10 +1,9 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db import transaction
-from django.http import HttpResponseRedirect
 from .models import ExchangeAgency, CurrencyRate
 
 
@@ -135,5 +134,58 @@ class CurrencyRateDeleteView(LoginRequiredMixin, DeleteView):
     model = CurrencyRate
     template_name = 'application/currency_rate_confirm_delete.html'
     success_url = reverse_lazy('application:agency-rates')
+
+
+class AgencyDetailView(LoginRequiredMixin, UpdateView):
+    """View for displaying and managing currency rates for a specific exchange agency"""
+    model = ExchangeAgency
+    template_name = 'application/agency_detail.html'
+    fields = []  # We don't actually need any fields as we're not editing the agency
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        agency = self.get_object()
+        
+        # Get all user's agencies for the tab navigation
+        context['agencies'] = ExchangeAgency.objects.filter(owner=self.request.user)
+        
+        # Get external rates (e.g., from kurs.kz and mig.kz)
+        context['external_rates'] = CurrencyRate.objects.filter(
+            agency__is_external=True
+        ).select_related('agency')
+        
+        # Get current agency rates
+        context['agency_rates'] = CurrencyRate.objects.filter(
+            agency=agency
+        ).select_related('agency')
+        
+        # Create a dictionary of rates by currency for easy access in template
+        context['rates_by_currency'] = {
+            'USD': {'external': [{'agency': {'name': 'kurs.kz'}, 'buy_rate': '500', 'sell_rate': '505', 'changed_at_pretty': '10.03.2025'},
+                                 {'agency': {'name': 'mig.kz'}, 'buy_rate': '500', 'sell_rate': '505', 'changed_at_pretty': '10.03.2025'},
+                                 {'agency': {'name': 'jzj9999.com'}, 'buy_rate': '500', 'sell_rate': '505', 'changed_at_pretty': '10.03.2025'}]},
+
+            'EUR': {'external': [{'agency':{'name': 'kurs.kz'}, 'buy_rate': '550', 'sell_rate': '560', 'changed_at_pretty': '10.03.2025'},
+                                 {'agency':{'name': 'mig.kz'}, 'buy_rate': '550', 'sell_rate': '560', 'changed_at_pretty': '10.03.2025'},
+                                 {'agency':{'name': 'jzj9999.com'}, 'buy_rate': '550', 'sell_rate': '560', 'changed_at_pretty': '10.03.2025'}]},
+
+            'RUB': {'external': [{'agency':{'name': 'kurs.kz'}, 'buy_rate': '5.0', 'sell_rate': '5.5', 'changed_at_pretty': '10.03.2025'},
+                                 {'agency':{'name': 'mig.kz'}, 'buy_rate': '5.0', 'sell_rate': '5.5', 'changed_at_pretty': '10.03.2025'},
+                                 {'agency':{'name': 'jzj9999.com'}, 'buy_rate': '5.0', 'sell_rate': '5.5', 'changed_at_pretty': '10.03.2025'}]},
+        }
+        
+        # Organize external rates by currency
+        for rate in context['external_rates']:
+            context['rates_by_currency'][rate.currency]['external'].append(rate)
+            
+        # Add agency rates
+        for rate in context['agency_rates']:
+            context['rates_by_currency'][rate.currency]['agency'] = rate
+        
+        return context
+
+    def get_queryset(self):
+        # Only allow access to user's own agencies
+        return ExchangeAgency.objects.filter(owner=self.request.user)
     
     
