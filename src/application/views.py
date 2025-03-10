@@ -39,15 +39,12 @@ class CurrencyRateCreateView(LoginRequiredMixin, CreateView):
     model = CurrencyRate
     template_name = 'application/currency_rate_form.html'
     fields = ['agency', 'currency', 'buy_rate', 'sell_rate']
-    success_url = reverse_lazy('agency-rates')
+    success_url = reverse_lazy('application:agency-rates')
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         # Limit agency choices to those user has access to
-        form.fields['agency'].queryset = ExchangeAgency.objects.filter(
-            CurrencyRate(owner=self.request.user) |
-            CurrencyRate(staff=self.request.user)
-        )
+        form.fields['agency'].queryset = ExchangeAgency.objects.filter(owner=self.request.user)
         return form
 
     def form_valid(self, form):

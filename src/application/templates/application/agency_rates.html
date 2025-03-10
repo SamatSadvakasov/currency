@@ -5,7 +5,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Currency Rates</h1>
-        <a href="#" class="btn btn-primary">
+        <a href="{% url 'application:currency-rate-create' %}" class="btn btn-primary">
             Add New Rate
         </a>
     </div>
@@ -36,7 +36,7 @@
                                         <td>{{ rate.sell_rate }}</td>
                                         <td>{{ rate.changed_at_pretty }}</td>
                                         <td>
-                                            <a href="{% url 'currency-rate-create' %}?agency={{ agency.id }}&currency={{ rate.currency }}" 
+                                            <a href="{% url 'application:currency-rate-create' %}?agency={{ agency.id }}&currency={{ rate.currency }}" 
                                                class="btn btn-sm btn-outline-primary">
                                                 Update
                                             </a>
