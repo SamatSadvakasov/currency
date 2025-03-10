@@ -25,7 +25,8 @@
                                     <th>Buy Rate</th>
                                     <th>Sell Rate</th>
                                     <th>Last Updated</th>
-                                    <th>Actions</th>
+                                    <th>Update</th>
+                                    <th>Delete</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -36,9 +37,15 @@
                                         <td>{{ rate.sell_rate }}</td>
                                         <td>{{ rate.changed_at_pretty }}</td>
                                         <td>
-                                            <a href="{% url 'application:currency-rate-create' %}?agency={{ agency.id }}&currency={{ rate.currency }}" 
+                                            <a href="{% url 'application:currency-rate-update' rate.id%}" 
                                                class="btn btn-sm btn-outline-primary">
                                                 Update
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'application:currency-rate-delete' rate.id %}" 
+                                               class="btn btn-sm btn-outline-danger">
+                                                Delete
                                             </a>
                                         </td>
                                     </tr>

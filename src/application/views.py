@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db import transaction
-
+from django.http import HttpResponseRedirect
 from .models import ExchangeAgency, CurrencyRate
 
 
@@ -81,3 +81,59 @@ class CurrencyRateCreateView(LoginRequiredMixin, CreateView):
         except Exception as e:
             messages.error(self.request, f"Error saving rates: {str(e)}")
             return self.form_invalid(form)
+
+
+class CurrencyRateUpdateView(LoginRequiredMixin, UpdateView):
+    """View for updating existing currency rates"""
+    model = CurrencyRate
+    template_name = 'application/currency_rate_form.html'
+    fields = ['agency', 'currency', 'buy_rate', 'sell_rate']
+    success_url = reverse_lazy('application:agency-rates')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['agency'].queryset = ExchangeAgency.objects.filter(owner=self.request.user)
+        # Disable currency and agency fields since we're updating
+        form.fields['currency'].disabled = True
+        form.fields['agency'].disabled = True
+        
+        # Set initial values from existing rate
+        rate = self.get_object()
+        form.fields['currency'].initial = rate.currency
+        form.fields['agency'].initial = rate.agency
+        return form
+    
+    def get_object(self, queryset=None):
+        # Get the rate to update
+        return get_object_or_404(CurrencyRate, pk=self.kwargs['pk'])
+    
+    
+    def form_valid(self, form):
+        # Check if user has permission to update rates for this agency
+        agency = form.cleaned_data['agency']
+        if not (agency.owner == self.request.user or agency.staff.filter(id=self.request.user.id).exists()):
+            messages.error(self.request, "You don't have permission to update rates for this agency.")
+            return self.form_invalid(form)
+        
+        try:
+            with transaction.atomic():
+                # Update existing rate
+                existing_rate = self.get_object()
+                existing_rate.buy_rate = form.cleaned_data['buy_rate']
+                existing_rate.sell_rate = form.cleaned_data['sell_rate']
+                existing_rate.save()
+                messages.success(self.request, f"Updated {existing_rate.get_currency_display()} rates for {agency.name}")
+                return redirect(self.success_url)
+        except Exception as e:
+            messages.error(self.request, f"Error updating rates: {str(e)}")
+            return self.form_invalid(form)
+                
+
+
+class CurrencyRateDeleteView(LoginRequiredMixin, DeleteView):
+    """View for deleting existing currency rates"""
+    model = CurrencyRate
+    template_name = 'application/currency_rate_confirm_delete.html'
+    success_url = reverse_lazy('application:agency-rates')
+    
+    
