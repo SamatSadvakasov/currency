@@ -30,33 +30,10 @@ class ExchangeAgencyAdmin(admin.ModelAdmin):
 
 @admin.register(CurrencyRate)
 class CurrencyRateAdmin(admin.ModelAdmin):
-    list_display = ('agency', 'currency', 'buy_rate_display', 'sell_rate_display', 'margin', 'last_updated')
+    list_display = ('agency', 'currency', 'buy_rate', 'sell_rate', 'last_updated')
     list_filter = ('agency', 'currency', 'created_at')
     search_fields = ('agency__name', 'currency')
     readonly_fields = ('created_at', 'changed_at')
-    
-    def buy_rate_display(self, obj):
-        return format_html(
-            '<span style="color: #28a745;">{:.2f}</span>',
-            obj.buy_rate
-        )
-    buy_rate_display.short_description = 'Buy Rate'
-    
-    def sell_rate_display(self, obj):
-        return format_html(
-            '<span style="color: #dc3545;">{:.2f}</span>',
-            obj.sell_rate
-        )
-    sell_rate_display.short_description = 'Sell Rate'
-    
-    def margin(self, obj):
-        margin = obj.sell_rate - obj.buy_rate
-        return format_html(
-            '<span style="color: {};">{:.2f}</span>',
-            '#28a745' if margin > 0 else '#dc3545',
-            margin
-        )
-    margin.short_description = 'Margin'
     
     def last_updated(self, obj):
         return obj.changed_at_pretty

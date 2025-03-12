@@ -1,9 +1,8 @@
 import datetime as dt
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 
-User = get_user_model()
 
 
 class TimestampModel(models.Model):
@@ -31,7 +30,7 @@ class TimestampModel(models.Model):
 class ExchangeAgency(TimestampModel):
     """Model to store information about exchange agencies"""
     
-    name = models.CharField(max_length=255, verbose_name=_("Agency name"))
+    name = models.CharField(max_length=255, unique=True, verbose_name=_("Agency name"))
     is_active = models.BooleanField(default=True, verbose_name=_("Is active"))
     is_external = models.BooleanField(default=False, verbose_name=_("Is external source"))
     owner = models.ForeignKey(
@@ -62,6 +61,8 @@ class CurrencyRate(TimestampModel):
         ('USD', _('US Dollar')),
         ('EUR', _('Euro')),
         ('RUB', _('Russian Ruble')),
+        ('CNY', _('China Yuan')),
+        ('USD-CNY', _('USD - Yuan (美元)')),
     ]
     
     agency = models.ForeignKey(
@@ -71,19 +72,23 @@ class CurrencyRate(TimestampModel):
         verbose_name=_("Exchange Agency")
     )
     currency = models.CharField(
-        max_length=3,
+        max_length=7,
         choices=CURRENCY_CHOICES,
         verbose_name=_("Currency")
     )
     buy_rate = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        verbose_name=_("Buy Rate")
+        verbose_name=_("Buy Rate"),
+        null=True,
+        blank=True,
     )
     sell_rate = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        verbose_name=_("Sell Rate")
+        verbose_name=_("Sell Rate"),
+        null=True,
+        blank=True,
     )
     
     def __str__(self):
