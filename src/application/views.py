@@ -16,7 +16,7 @@ class AgencyRatesView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # Get rates for agencies where user is owner or staff
         return CurrencyRate.objects.filter(
-            agency__in=ExchangeAgency.objects.filter(owner=self.request.user)
+            agency__in=ExchangeAgency.objects.filter(owner=self.request.user, is_external=False)
         ).select_related('agency')
 
     def get_context_data(self, **kwargs):
@@ -147,7 +147,7 @@ class AgencyDetailView(LoginRequiredMixin, UpdateView):
         agency = self.get_object()
         
         # Get all user's agencies for the tab navigation
-        context['agencies'] = ExchangeAgency.objects.filter(owner=self.request.user)
+        context['agencies'] = ExchangeAgency.objects.filter(owner=self.request.user, is_external=False)
         
         # Get external rates (e.g., from kurs.kz and mig.kz)
         context['external_rates'] = CurrencyRate.objects.filter(
@@ -160,24 +160,22 @@ class AgencyDetailView(LoginRequiredMixin, UpdateView):
         ).select_related('agency')
         
         # Create a dictionary of rates by currency for easy access in template
-        context['rates_by_currency'] = {
-            'USD': {'external': [{'agency': {'name': 'kurs.kz'}, 'buy_rate': '500', 'sell_rate': '505', 'changed_at_pretty': '10.03.2025'},
-                                 {'agency': {'name': 'mig.kz'}, 'buy_rate': '500', 'sell_rate': '505', 'changed_at_pretty': '10.03.2025'},
-                                 {'agency': {'name': 'jzj9999.com'}, 'buy_rate': '500', 'sell_rate': '505', 'changed_at_pretty': '10.03.2025'}]},
 
-            'EUR': {'external': [{'agency':{'name': 'kurs.kz'}, 'buy_rate': '550', 'sell_rate': '560', 'changed_at_pretty': '10.03.2025'},
-                                 {'agency':{'name': 'mig.kz'}, 'buy_rate': '550', 'sell_rate': '560', 'changed_at_pretty': '10.03.2025'},
-                                 {'agency':{'name': 'jzj9999.com'}, 'buy_rate': '550', 'sell_rate': '560', 'changed_at_pretty': '10.03.2025'}]},
-
-            'RUB': {'external': [{'agency':{'name': 'kurs.kz'}, 'buy_rate': '5.0', 'sell_rate': '5.5', 'changed_at_pretty': '10.03.2025'},
-                                 {'agency':{'name': 'mig.kz'}, 'buy_rate': '5.0', 'sell_rate': '5.5', 'changed_at_pretty': '10.03.2025'},
-                                 {'agency':{'name': 'jzj9999.com'}, 'buy_rate': '5.0', 'sell_rate': '5.5', 'changed_at_pretty': '10.03.2025'}]},
-        }
-        
         # Organize external rates by currency
+        context['rates_by_currency'] = {
+            'USD': {'external': []},
+
+            'EUR': {'external': []},
+
+            'RUB': {'external': []},
+
+            'CNY': {'external': []},
+
+            'USD-CNY': {'external': []},
+        }
         for rate in context['external_rates']:
             context['rates_by_currency'][rate.currency]['external'].append(rate)
-            
+
         # Add agency rates
         for rate in context['agency_rates']:
             context['rates_by_currency'][rate.currency]['agency'] = rate
