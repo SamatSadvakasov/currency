@@ -31,4 +31,5 @@ def parsing_task():
             b, _ = CurrencyRate.objects.get_or_create(agency=a, currency=currency)
             b.buy_rate = buy_rate
             b.sell_rate = sell_rate
+            b.changed_at = datetime.now()
             b.save()

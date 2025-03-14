@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: poetry run python /app/src/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - 8000
+    environment:
+      - DJANGO_SETTINGS_MODULE=currency.settings
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - currency_network
+
+#  celery_worker:
+#    build: .
+#    command: celery -A src.currency.celery worker -l info
+#    environment:
+#      - DJANGO_SETTINGS_MODULE=currency.settings
+#      - REDIS_URL=redis://redis:6379/0
+#    depends_on:
+#      - web
+#      - redis
+#
+#  celery_beat:
+#    build: .
+#    command: celery -A src.currency.celery beat -l info
+#    environment:
+#      - DJANGO_SETTINGS_MODULE=currency.settings
+#      - REDIS_URL=redis://redis:6379/0
+#    depends_on:
+#      - web
+#      - redis
+
+  redis:
+    image: redis:6-alpine
+    volumes:
+      - redis_data:/data
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    networks:
+      - currency_network
+
+networks:
+  currency_network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  static_volume:
+  media_volume:

@@ -16,6 +16,7 @@ django-redis = "^5.4.0"
 beautifulsoup4 = "^4.13.3"
 selenium = "^4.29.0"
 requests = "^2.32.3"
+gunicorn = "^23.0.0"
 
 
 [build-system]

@@ -14,6 +14,8 @@ CHINESE_WP_URL = 'https://i.jzj9999.com/quoteh5/?ivk_sa=1025883i'
 options = webdriver.ChromeOptions()
 options.add_argument('headless')
 options.add_argument("--disable-blink-features=AutomationControlled")
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
 
 def get_soup_from_url(url):
     """Fetches and parses HTML content from a URL."""
